@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import CustomUser
+from .models import CartItems, CustomUser
 
+# ---------- LOGIN/SIGNUP ----------
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -25,3 +26,11 @@ class AccessTokenOnlySerializer(TokenObtainPairSerializer):
         return {
             "access": data["access"]
         }
+
+
+
+# ---------- CART ITEMS ----------
+class CartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItems
+        fields = ["id", "user", "product", "quantity"]
