@@ -36,11 +36,19 @@ class CartItems(models.Model):
     # since we are using CustomUser Model(not Django's default User Model), 
     # we will use our custom AUTH_USER_MODEL(defined in settings/base.py)
     # on_delete=models.CASCADE: if a user is deleted from db, all its cart items would be deleted
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True)
 
     # Product Model: store/models.py(Product)
     # On Delete: if a product is deleted from db, it will be removed from user's cart also
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     quantity = models.PositiveIntegerField()
+    
+    class Meta:
+        # Compound index for efficient duplicate checking and user cart queries
+        indexes = [
+            models.Index(fields=['user', 'product'], name='cartitems_user_product_idx'),
+        ]
+        # Ensure a user can't have duplicate products in their cart
+        unique_together = ['user', 'product']
 
 

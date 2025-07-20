@@ -6,6 +6,7 @@ from rest_framework import status
 from orders.models import Order
 from orders.serializers import OrderSerializer
 from users.models import CartItems
+from store.models import Product
 from .serializers import AccessTokenOnlySerializer, CartItemSerializer, SignupSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status, permissions
@@ -61,17 +62,43 @@ class CartView(APIView):
         data = request.data.copy()
         user = request.user
         product_id = data.get("product")
-        quantity = int(data.get("quantity", 1))
+        
+        # Validate quantity input
+        try:
+            quantity = int(data.get("quantity", 1))
+            if quantity <= 0:
+                return Response({"error": "Quantity must be greater than 0."}, status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid quantity value."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate product exists
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Check if the same product is already in the user's cart
         existing_item = CartItems.objects.filter(user=user, product_id=product_id).first()
 
         if existing_item:
+            # Check inventory for the new total quantity
+            new_total_quantity = existing_item.quantity + quantity
+            if new_total_quantity > product.inventory_count:
+                return Response({
+                    "error": f"Cannot add {quantity} more items. Only {product.inventory_count - existing_item.quantity} additional items available."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
             # If found, increment the quantity
-            existing_item.quantity += quantity
+            existing_item.quantity = new_total_quantity
             existing_item.save()
             serializer = CartItemSerializer(existing_item)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # For new cart items, check inventory
+        if quantity > product.inventory_count:
+            return Response({
+                "error": f"Cannot add {quantity} items. Only {product.inventory_count} available in inventory."
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # If not found, create a new cart item
         data["user"] = user.id
