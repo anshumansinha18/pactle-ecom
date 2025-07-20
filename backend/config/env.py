@@ -14,3 +14,6 @@ def get_current_env_value(key: str) -> str:
      if value is None:
         raise RuntimeError(f"Key not present in environment variable: {key}")
      return value
+
+def get_optional_env_value(key: str, default=None):
+    return os.getenv(key, default)
