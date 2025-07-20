@@ -1,5 +1,23 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+
+from store.models import Product
+
+
+
+class CartItems(models.Model):
+    # since we are using CustomUser Model(not Django's default User Model), 
+    # we will use our custom AUTH_USER_MODEL(defined in settings/base.py)
+    # on_delete=models.CASCADE: if a user is deleted from db, all its cart items would be deleted
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    # Product Model: store/models.py(Product)
+    # On Delete: if a product is deleted from db, it will be removed from user's cart also
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):

@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     # custom apps:
     'store',
     'users',
+    'orders'
 ]
 
 MIDDLEWARE = [
