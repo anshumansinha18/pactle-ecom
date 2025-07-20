@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status, permissions
 from rest_framework.response import Response
-
+from config.slack import send_order_notification
 from orders.models import Order, OrderItem
 from users.models import CartItems
 from store.models import Product
@@ -94,6 +94,8 @@ class PlaceOrderView(APIView):
 
                 # Clear cart only after successful order creation
                 cart_items.delete()
+
+            send_order_notification(user, order, total_amount)
 
             return Response({
                 "message": "Order placed successfully.", 

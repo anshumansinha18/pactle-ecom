@@ -9,6 +9,7 @@ python-dotenv = "*"
 psycopg2 = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
+slack-sdk = "*"
 
 [dev-packages]
 
