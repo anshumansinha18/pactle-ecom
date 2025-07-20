@@ -3,10 +3,20 @@
 import os
 import sys
 
+from config.env import get_current_env_value
+
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    env = get_current_env_value("DJANGO_ENV")
+
+    if env == "prod":
+        os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.prod"
+    elif env == "dev":
+        os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.dev"
+    else:
+        os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.dev"
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
