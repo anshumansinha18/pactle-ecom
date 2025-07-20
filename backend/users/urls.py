@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CartItemDetailView, CartView, LoginView, SignupView
+from .views import CartItemDetailView, CartView, LoginView, SignupView, UserOrderListView
 
 urlpatterns = [
     # sign up flow:
@@ -11,5 +11,9 @@ urlpatterns = [
     # cart item:
     path("cart/", CartView.as_view(), name="cart"),
 
+    # cart item detail:
     path("cart/<int:pk>/", CartItemDetailView.as_view(), name="cart_item"),
+
+    # user orders:
+    path("orders/", UserOrderListView.as_view(), name="user_orders"),
 ]

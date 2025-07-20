@@ -3,6 +3,8 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from orders.models import Order
+from orders.serializers import OrderSerializer
 from users.models import CartItems
 from .serializers import AccessTokenOnlySerializer, CartItemSerializer, SignupSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -101,3 +103,20 @@ class CartItemDetailView(RetrieveUpdateDestroyAPIView):
     # Filter cart items to only include items for the current user
     def get_queryset(self):
         return CartItems.objects.filter(user=self.request.user)
+
+
+
+class UserOrderListView(APIView):
+    """
+    This view handles the list of orders for the current user:
+    It supports:
+        - GET: retrieve all orders for the current user
+    """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        # Fetch all orders made by the logged-in user
+        orders = Order.objects.filter(user=request.user).order_by("-created_at")
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
